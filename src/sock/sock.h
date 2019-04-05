@@ -64,10 +64,10 @@ public:
     std::uint16_t remote_port() const { return ntohs(remote_.sin_port); }
     std::uint32_t local_ip() const { return GetAddress(local_); }
     std::uint32_t remote_ip() const { return GetAddress(remote_); }
-    const std::string &local_name() const {
+    const char *local_name() const {
         return inet_ntoa(local_.sin_addr);
     }
-    const std::string &remote_name() const {
+    const char *remote_name() const {
         return inet_ntoa(remote_.sin_addr);
     }
 

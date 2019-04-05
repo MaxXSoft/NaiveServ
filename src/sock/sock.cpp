@@ -30,6 +30,7 @@ void Socket::InitSocket() {
 }
 
 void Socket::QuitSocket() {
+    if (IsValidSocket(accepted_)) CloseSocket(accepted_);
     CloseSocket(socket_);
 #ifdef UTIL_OS_WINDOWS
     WSACleanup();
