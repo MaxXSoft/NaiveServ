@@ -114,7 +114,7 @@ bool Socket::Accept() {
     if (status_ != Status::Listening) return false;
     // accept the request
     auto addr = reinterpret_cast<sockaddr *>(&remote_);
-    int len = sizeof(sockaddr_in);
+    auto len = sizeof(sockaddr_in);
     accepted_ = accept(socket_, addr, reinterpret_cast<socklen_t *>(&len));
     // check is valid
     if (!IsValidSocket(accepted_)) return SetError();
@@ -130,7 +130,12 @@ bool Socket::Send(const std::uint8_t *data, std::size_t &len) {
         len = ret;
     }
     else {     // Protocol::UDP
-        // TODO
+        // TODO: test
+        auto addr = reinterpret_cast<sockaddr *>(&remote_);
+        auto ret = sendto(socket_, data, len, 0,
+                addr, sizeof(sockaddr_in));
+        if (ret < 0) return SetError();
+        len = ret;
     }
     return true;
 }
@@ -143,7 +148,12 @@ bool Socket::Receive(std::uint8_t *data, std::size_t &len) {
         len = ret;
     }
     else {     // Protocol::UDP
-        // TODO
+        // TODO: test
+        auto addr = reinterpret_cast<sockaddr *>(&remote_);
+        auto addr_len = static_cast<socklen_t>(sizeof(sockaddr_in));
+        auto ret = recvfrom(socket_, data, len, 0, addr, &addr_len);
+        if (ret < 0) return SetError();
+        len = ret;
     }
     return true;
 }
