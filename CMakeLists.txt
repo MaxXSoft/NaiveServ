@@ -23,7 +23,7 @@ include_directories(src)
 # all of C++ source files
 # file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE SOCK_TEST_SRC "test/sock_test.cpp" "src/sock/*.cpp")
-file(GLOB_RECURSE RESPONSE_TEST_SRC "test/response_text.cpp" "src/http/response.cpp")
+file(GLOB_RECURSE RESPONSE_TEST_SRC "test/response_test.cpp" "src/http/response.cpp")
 
 # executable
 # add_executable(naiveserv ${SOURCES})
