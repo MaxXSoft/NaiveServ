@@ -54,8 +54,52 @@ static const std::map<int, std::string> status_text_ = {
 
 void HTTPResponse::AutoFill() {
     // TODO: implement this method
+
+    // fill date
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
+
+    field_info_["Date"] = ss.str();
+
+    // fill Content-Length
+    field_info_["Content-Length"] = "0";
+
+    // fill Server
+    field_info_["Server"] = kServerName;
+
+    // fill Connection 
+    // each connection is a new TCP connection
+    field_info_["Connection"] = "Closed";
+
+    // fill Content-Type
 }
 
 std::string HTTPResponse::ToString() {
     // TODO: implement this method
+
+    std::ostringstream oss;
+
+    // HTTP/1.1
+    oss << "HTTP/" << kMajorVersion << "." << kMinorVersion << " ";
+
+    // Status Code and text
+    oss << status_code_ << " " << status_text_.find(status_code_)->second << "\n";
+
+    // other fields
+    for (auto i : field_info_){
+        oss << i.first << ": " << i.second << "\n";
+    }
+
+    // response content
+    oss << "Content: ";
+
+    int size = data_.size();
+    for (int i=0;i<size;i++) {
+        oss << data_[i];
+    }
+
+    return oss.str();
 }
