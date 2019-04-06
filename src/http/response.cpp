@@ -67,6 +67,7 @@ void HTTPResponse::AutoFill() {
     field_info_["Date"] = oss.str();
     // fill Content-Length
     oss.clear();
+    oss.str("");
     oss << data_.size();
     field_info_["Content-Length"] = oss.str();
     // fill Server
