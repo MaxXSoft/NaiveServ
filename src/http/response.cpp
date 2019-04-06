@@ -1,9 +1,16 @@
 #include <http/response.h>
 
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <chrono>
+#include <ctime>
+#include <cassert>
+
 namespace {
 
 // status code -> status description
-static const std::map<int, std::string> status_text_ = {
+static const std::map<int, std::string> kStatusText = {
     {100, "Continue"},
     {101, "Switching Protocols"},
     {200, "OK"},
@@ -47,59 +54,43 @@ static const std::map<int, std::string> status_text_ = {
     {505, "HTTP Version not supported"},
 };
 
-// TODO: put all of internal constants, variables or functions here,
-//       or just delete this scope
+static constexpr const char *kDateFormat = "%a, %d %b %y %T GMT";
 
 } // namespace
 
 void HTTPResponse::AutoFill() {
-    // TODO: implement this method
-
+    std::ostringstream oss;
     // fill date
     auto now = std::chrono::system_clock::now();
-    auto in_time_t = std::chrono::system_clock::to_time_t(now);
-
-    std::stringstream ss;
-    ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
-
-    field_info_["Date"] = ss.str();
-
+    auto time_now = std::chrono::system_clock::to_time_t(now);
+    oss << std::put_time(std::localtime(&time_now), kDateFormat);
+    field_info_["Date"] = oss.str();
     // fill Content-Length
-    field_info_["Content-Length"] = "0";
-
+    oss.clear();
+    oss << data_.size();
+    field_info_["Content-Length"] = oss.str();
     // fill Server
     field_info_["Server"] = kServerName;
-
-    // fill Connection 
-    // each connection is a new TCP connection
+    // fill Connection
+    // NOTE: each connection is a new TCP connection
     field_info_["Connection"] = "Closed";
-
-    // fill Content-Type
 }
 
 std::string HTTPResponse::ToString() {
-    // TODO: implement this method
-
     std::ostringstream oss;
-
-    // HTTP/1.1
+    // set HTTP response version
     oss << "HTTP/" << kMajorVersion << "." << kMinorVersion << " ";
-
-    // Status Code and text
-    oss << status_code_ << " " << status_text_.find(status_code_)->second << "\n";
-
+    // status code and text
+    auto it = kStatusText.find(status_code_);
+    assert(it != kStatusText.end());
+    oss << status_code_ << " " << it->second << "\r\n";
     // other fields
-    for (auto i : field_info_){
-        oss << i.first << ": " << i.second << "\n";
+    AutoFill();
+    for (const auto &i : field_info_) {
+        oss << i.first << ": " << i.second << "\r\n";
     }
-
     // response content
-    oss << "Content: ";
-
-    int size = data_.size();
-    for (int i=0;i<size;i++) {
-        oss << data_[i];
-    }
-
+    oss << "\r\n";
+    for (const auto &i : data_) oss << i;
     return oss.str();
 }

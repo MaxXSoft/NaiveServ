@@ -1,17 +1,12 @@
 #ifndef NAIVESERV_HTTP_RESPONSE_H_
 #define NAIVESERV_HTTP_RESPONSE_H_
 
-#include <iostream>
-#include <iomanip>
 #include <string>
 #include <vector>
-#include <sstream>
 #include <map>
 #include <cstring>
 #include <cstdint>
 #include <cstddef>
-#include <chrono>
-#include <ctime> 
 
 // wrap HTTP response into string
 class HTTPResponse {
@@ -19,7 +14,7 @@ public:
     using DataArray = std::vector<std::uint8_t>;
 
     HTTPResponse() {}
-    HTTPResponse(int status_code) : status_code_(status_code) { AutoFill(); }
+    HTTPResponse(int status_code) : status_code_(status_code) {}
 
     std::string ToString();
 
@@ -37,7 +32,7 @@ public:
 private:
     // HTTP version in response message
     static constexpr int kMajorVersion = 1, kMinorVersion = 1;
-    static constexpr const char *kServerName = "NaiveServ/1.0.0(Linux)";
+    static constexpr const char *kServerName = "NaiveServ";
 
     // auto fill 'Date', 'Content-Length', 'Server' fields to 'field_info_'
     void AutoFill();
