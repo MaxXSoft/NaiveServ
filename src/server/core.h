@@ -25,6 +25,7 @@ private:
     Core() { InitSocket(); }
 
     void InitSocket();
+    void LogError(const char *message);
 
     // singleton
     static std::mutex instance_mutex_;

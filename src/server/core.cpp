@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include <util/logger.h>
+
 namespace {
 
 static constexpr int kHTTPLocalPort = 80;
@@ -10,6 +12,11 @@ static constexpr int kHTTPLocalPort = 80;
 
 void Core::InitSocket() {
     sock_.set_local_port(kHTTPLocalPort);
+}
+
+void Core::LogError(const char *message) {
+    ulog << "[Core " << utime << "] ERROR: ";
+    ulog << message << std::endl;
 }
 
 Core &Core::Instance() {
@@ -26,7 +33,8 @@ void Core::StartListen() {
         auto socket = sock_.AcceptNew();
         // check if an error has occurred
         if (sock_.status() == Socket::Status::Error) {
-            // TODO: log error
+            // log error
+            LogError("socket error, connection reset");
             // reset current socket
             sock_.Reset();
             InitSocket();
