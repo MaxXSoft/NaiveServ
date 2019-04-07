@@ -2,6 +2,7 @@
 #define NAIVESERV_SOCK_SOCK_H_
 
 #include <string>
+#include <mutex>
 #include <cstdint>
 #include <cstddef>
 
@@ -26,13 +27,33 @@ public:
         Closed, Open, Listening, Connected, Error
     };
 
-    Socket() : proto_(Protocol::TCP), status_(Status::Closed) {
+    explicit Socket() : proto_(Protocol::TCP), status_(Status::Closed) {
+        IncreaseCounter();
         InitSocket();
     }
-    Socket(Protocol protocol) : proto_(protocol), status_(Status::Closed) {
+    explicit Socket(Protocol protocol)
+            : proto_(protocol), status_(Status::Closed) {
+        IncreaseCounter();
         InitSocket();
     }
-    ~Socket() { QuitSocket(); }
+    Socket(std::nullptr_t)
+            : proto_(Protocol::TCP), status_(Status::Closed) {
+        InvalidateSocket(socket_);
+        InvalidateSocket(accepted_);
+    }
+    // disable copy constructor
+    Socket(const Socket &socket) = delete;
+    // move constructor
+    Socket(Socket &&socket) noexcept;
+    ~Socket() {
+        QuitSocket();
+        DecreaseCounter();
+    }
+
+    // move assignment operator
+    const Socket &operator=(Socket &&socket) noexcept;
+    bool operator==(std::nullptr_t) const { return is_valid(); }
+    operator bool() const { return is_valid(); }
 
     void Reset() {
         QuitSocket();
@@ -43,6 +64,7 @@ public:
     bool Connect(const std::string &ip);
     bool Connect(std::uint32_t ip);
     bool Accept();
+    Socket AcceptNew();
     bool Send(const std::uint8_t *data, std::size_t &len);
     bool Receive(std::uint8_t *data, std::size_t &len);
     bool Close();
@@ -58,6 +80,9 @@ public:
     }
 
     // getters
+    bool is_valid() const {
+        return IsValidSocket(socket_) || IsValidSocket(accepted_);
+    }
     Protocol protocol() const { return proto_; }
     Status status() const { return status_; }
     std::uint16_t local_port() const { return ntohs(local_.sin_port); }
@@ -78,6 +103,11 @@ private:
     using SocketType = int;
 #endif
 
+    // private constructor for method 'AcceptNew'
+    explicit Socket(const Socket &socket, SocketType accepted);
+
+    void IncreaseCounter();
+    void DecreaseCounter();
     void InitSocket();
     void QuitSocket();
     void InitAddress(sockaddr_in &addr);
@@ -85,7 +115,7 @@ private:
     bool OpenSocket();
     bool Bind();
     bool CloseSocket(SocketType &socket);
-    bool IsValidSocket(SocketType socket);
+    bool IsValidSocket(SocketType socket) const;
     void InvalidateSocket(SocketType &socket);
 
     bool SetError() {
@@ -100,6 +130,10 @@ private:
         return *reinterpret_cast<const std::uint32_t *>(&addr.sin_addr);
     }
 
+    // counter for socket, thread-safe
+    static int socket_counter_;
+    static std::mutex counter_mutex_;
+    // other properties
     Protocol proto_;
     Status status_;
     sockaddr_in local_, remote_;

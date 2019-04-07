@@ -14,12 +14,46 @@ using socklen_t = int;
 
 } // namespace
 
-void Socket::InitSocket() {
+int Socket::socket_counter_ = 0;
+std::mutex Socket::counter_mutex_;
+
+Socket::Socket(const Socket &socket, SocketType accepted) {
+    IncreaseCounter();
+    // copy properties
+    proto_ = socket.proto_;
+    status_ = socket.status_;
+    local_ = socket.local_;
+    remote_ = socket.remote_;
+    accepted_ = accepted;
+    // invalidate current sockets
+    InvalidateSocket(socket_);
+}
+
+void Socket::IncreaseCounter() {
+    // make sure initialization of socket is thread-safe
+    std::lock_guard<std::mutex> lock(counter_mutex_);
 #ifdef UTIL_OS_WINDOWS
-    WSADATA wsa;
-    int err = WSAStartup(MAKEWORD(2, 2), &wsa);
-    assert(!err);
+    if (!socket_counter_) {
+        // make Windows socket happy
+        WSADATA wsa;
+        int err = WSAStartup(MAKEWORD(2, 2), &wsa);
+        assert(!err);
+    }
 #endif
+    ++socket_counter_;
+}
+
+void Socket::DecreaseCounter() {
+    // make sure uninitialization of socket is thread-safe
+    std::lock_guard<std::mutex> lock(counter_mutex_);
+    --socket_counter_;
+#ifdef UTIL_OS_WINDOWS
+    // make Windows socket happy
+    if (!socket_counter_) WSACleanup();
+#endif
+}
+
+void Socket::InitSocket() {
     InvalidateSocket(accepted_);
     // initialize socket
     if (!OpenSocket()) return;
@@ -32,9 +66,6 @@ void Socket::InitSocket() {
 void Socket::QuitSocket() {
     if (IsValidSocket(accepted_)) CloseSocket(accepted_);
     CloseSocket(socket_);
-#ifdef UTIL_OS_WINDOWS
-    WSACleanup();
-#endif
 }
 
 void Socket::InitAddress(sockaddr_in &addr) {
@@ -73,7 +104,7 @@ bool Socket::CloseSocket(SocketType &socket) {
     return true;
 }
 
-bool Socket::IsValidSocket(SocketType socket) {
+bool Socket::IsValidSocket(SocketType socket) const {
 #ifdef UTIL_OS_WINDOWS
     return socket != INVALID_SOCKET;
 #else
@@ -87,6 +118,37 @@ void Socket::InvalidateSocket(SocketType &socket) {
 #else
     socket = -1;
 #endif
+}
+
+Socket::Socket(Socket &&socket) noexcept {
+    IncreaseCounter();
+    // copy properties
+    proto_ = socket.proto_;
+    status_ = socket.status_;
+    local_ = socket.local_;
+    remote_ = socket.remote_;
+    socket_ = socket.accepted_;
+    accepted_ = socket.accepted_;
+    // invalidate original sockets
+    InvalidateSocket(socket.socket_);
+    InvalidateSocket(socket.accepted_);
+}
+
+const Socket &Socket::operator=(Socket &&socket) noexcept {
+    if (&socket != this) {
+        QuitSocket();
+        // copy properties
+        proto_ = socket.proto_;
+        status_ = socket.status_;
+        local_ = socket.local_;
+        remote_ = socket.remote_;
+        socket_ = socket.accepted_;
+        accepted_ = socket.accepted_;
+        // invalidate original sockets
+        InvalidateSocket(socket.socket_);
+        InvalidateSocket(socket.accepted_);
+    }
+    return *this;
 }
 
 bool Socket::Listen() {
@@ -121,6 +183,23 @@ bool Socket::Accept() {
     if (!IsValidSocket(accepted_)) return SetError();
     status_ = Status::Connected;
     return true;
+}
+
+Socket Socket::AcceptNew() {
+    if (status_ != Status::Listening) return nullptr;
+    // accept the request
+    auto addr = reinterpret_cast<sockaddr *>(&remote_);
+    auto len = sizeof(sockaddr_in);
+    accepted_ = accept(socket_, addr, reinterpret_cast<socklen_t *>(&len));
+    // check is valid
+    if (!IsValidSocket(accepted_)) {
+        status_ = Status::Error;
+        return nullptr;
+    }
+    else {
+        // return new socket
+        return Socket(*this, accepted_);
+    }
 }
 
 bool Socket::Send(const std::uint8_t *data, std::size_t &len) {
@@ -163,7 +242,9 @@ bool Socket::Close() {
     if (status_ != Status::Connected) return false;
     if (IsValidSocket(accepted_)) {
         if (!CloseSocket(accepted_)) return false;
-        status_ = Status::Listening;
+        // switch status
+        if (IsValidSocket(socket_)) status_ = Status::Listening;
+        // else the status will be 'Status::Closed'
         return true;
     }
     else {
