@@ -1,7 +1,6 @@
 #ifndef NAIVESERV_SERVER_CORE_H_
 #define NAIVESERV_SERVER_CORE_H_
 
-#include <mutex>
 #include <forward_list>
 
 #include <sock/sock.h>
@@ -13,7 +12,7 @@ public:
     Core(const Core &) = delete;
     Core(Core &&) = delete;
 
-    static Core &Instance();
+    static Core &Instance() { return *core_instance_; }
 
     void StartListen();
     void Reset() {
@@ -28,7 +27,7 @@ private:
     void LogError(const char *message);
 
     // singleton
-    static std::mutex instance_mutex_;
+    static Core *core_instance_;
     // main socket
     Socket sock_;
     // pool of workers

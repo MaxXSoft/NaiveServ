@@ -10,6 +10,9 @@ static constexpr int kHTTPLocalPort = 80;
 
 } // namespace
 
+// initialize instance
+Core *Core::core_instance_ = new Core();
+
 void Core::InitSocket() {
     sock_.set_local_port(kHTTPLocalPort);
 }
@@ -17,13 +20,6 @@ void Core::InitSocket() {
 void Core::LogError(const char *message) {
     ulog << "[Core " << utime << "] ERROR: ";
     ulog << message << std::endl;
-}
-
-Core &Core::Instance() {
-    std::lock_guard<std::mutex> lock(instance_mutex_);
-    // initialize an static instance of 'Core'
-    static Core core;
-    return core;
 }
 
 void Core::StartListen() {
