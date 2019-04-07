@@ -42,7 +42,7 @@ public:
         InvalidateSocket(accepted_);
     }
     // disable copy constructor
-    Socket(const Socket &socket) = delete;
+    Socket(const Socket &) = delete;
     // move constructor
     Socket(Socket &&socket) noexcept;
     ~Socket() {
@@ -50,6 +50,8 @@ public:
         DecreaseCounter();
     }
 
+    // disable copy assignment operator
+    const Socket &operator=(const Socket &) = delete;
     // move assignment operator
     const Socket &operator=(Socket &&socket) noexcept;
     bool operator==(std::nullptr_t) const { return is_valid(); }
