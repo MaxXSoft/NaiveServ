@@ -1,5 +1,7 @@
 #include <http/parser.h>
 
+#include <cstring>
+
 void HTTPParser::Parse(const std::string &request) {
     int now_pos = 0;
     // fetch method information
@@ -84,8 +86,7 @@ void HTTPParser::Parse(const std::string &request) {
     // fetch requested data
     if (have_data) {
         now_pos += 4;   // first position of the data
-        auto data = request.substr(now_pos, request.size() - now_pos);
-        data_.reserve(data.size());
-        for (const auto &i : data) data_.push_back(i);
+        data_.resize(request.size() - now_pos);
+        std::memcpy(data_.data(), request.data() + now_pos, data_.size());
     }
 }
