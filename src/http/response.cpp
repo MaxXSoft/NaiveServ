@@ -63,7 +63,7 @@ void HTTPResponse::AutoFill() {
     // fill date
     auto now = std::chrono::system_clock::now();
     auto time_now = std::chrono::system_clock::to_time_t(now);
-    oss << std::put_time(std::localtime(&time_now), kDateFormat);
+    oss << std::put_time(std::gmtime(&time_now), kDateFormat);
     field_info_["Date"] = oss.str();
     // fill Content-Length
     oss.clear();
