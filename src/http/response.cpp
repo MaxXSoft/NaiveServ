@@ -72,9 +72,6 @@ void HTTPResponse::AutoFill() {
     field_info_["Content-Length"] = oss.str();
     // fill Server
     field_info_["Server"] = kServerName;
-    // fill Connection
-    // NOTE: each connection is a new TCP connection
-    field_info_["Connection"] = "Closed";
 }
 
 std::string HTTPResponse::ToString() {
