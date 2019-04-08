@@ -6,7 +6,7 @@
 
 #include <config/config.h>
 #include <http/parser.h>
-#include <server/responder/responder.h>
+#include <server/responder/router.h>
 #include <util/logger.h>
 
 void Worker::LogError(const char *message) {
@@ -49,9 +49,9 @@ void Worker::HandleConnection() {
         auto request = FetchData();
         // parse request
         HTTPParser parser(request);
-        // get responder
-        auto &factory = ResponderFactory::Instance();
-        auto responder = factory.GetResponderByURL(parser.url());
+        // get responder via router
+        auto &router = Router::Instance();
+        auto responder = router.GetResponderByURL(parser.url());
         // send response
         auto response = responder->AcceptRequest(parser).ToString();
         auto data = reinterpret_cast<std::uint8_t *>(response.data());
