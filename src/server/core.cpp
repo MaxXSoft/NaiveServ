@@ -10,9 +10,6 @@ static constexpr int kHTTPLocalPort = 80;
 
 } // namespace
 
-// initialize instance
-Core *Core::core_instance_ = new Core();
-
 void Core::InitSocket() {
     sock_.set_local_port(kHTTPLocalPort);
 }

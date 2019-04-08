@@ -5,14 +5,12 @@
 
 #include <sock/sock.h>
 #include <server/worker.h>
+#include <util/singleton.h>
 
-// NOTE: class 'Core' is a singleton
-class Core {
+class Core : public Singleton<Core> {
 public:
     Core(const Core &) = delete;
     Core(Core &&) = delete;
-
-    static Core &Instance() { return *core_instance_; }
 
     void StartListen();
     void Reset() {
@@ -21,13 +19,13 @@ public:
     }
 
 private:
+    friend class Singleton<Core>;
+
     Core() { InitSocket(); }
 
     void InitSocket();
     void LogError(const char *message);
 
-    // singleton
-    static Core *core_instance_;
     // main socket
     Socket sock_;
     // pool of workers
