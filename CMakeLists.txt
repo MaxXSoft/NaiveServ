@@ -29,14 +29,14 @@ include_directories(src)
 include_directories(lib)
 
 # all of C++ source files
-# file(GLOB_RECURSE SOURCES "src/*.cpp")
+file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE SOCK_TEST_SRC "test/sock_test.cpp" "src/sock/*.cpp")
 file(GLOB_RECURSE RESPONSE_TEST_SRC "test/response_test.cpp" "src/http/response.cpp")
 file(GLOB_RECURSE PARSER_TEST_SRC "test/parser_test.cpp" "src/http/parser.cpp")
 file(GLOB_RECURSE SINGLETON_TEST_SRC "test/singleton_test.cpp")
 
 # executable
-# add_executable(naiveserv ${SOURCES})
+add_executable(naiveserv ${SOURCES})
 add_executable(sock_test ${SOCK_TEST_SRC})
 add_executable(response_test ${RESPONSE_TEST_SRC})
 add_executable(parser_test ${PARSER_TEST_SRC})
