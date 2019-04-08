@@ -51,7 +51,7 @@ void Worker::HandleConnection() {
         HTTPParser parser(request);
         // get responder via router
         auto &router = Router::Instance();
-        auto responder = router.GetResponderByURL(parser.url());
+        auto responder = router.GetResponder(parser.url());
         // send response
         auto response = responder->AcceptRequest(parser).ToString();
         auto data = reinterpret_cast<std::uint8_t *>(response.data());
