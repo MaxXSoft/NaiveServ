@@ -9,9 +9,6 @@
 
 class Core : public Singleton<Core> {
 public:
-    Core(const Core &) = delete;
-    Core(Core &&) = delete;
-
     void StartListen();
     void Reset() {
         sock_.Reset();
