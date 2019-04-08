@@ -67,6 +67,8 @@ void Worker::HandleConnection() {
         }
         // check if connection is closed
         if (parser.GetFieldValue("Connection") == "closed") {
+            // close current socket
+            socket_.Close();
             // set 'done' flag
             done_ = true;
         }
