@@ -68,7 +68,7 @@ HTTPResponse NormalResponder::AcceptRequest(
         return HTTPResponse(404);
     }
     // get content type
-    auto type = GetTypeByExt(GetFileExtension(url));
+    auto type = GetTypeByExt(GetFileExtension(path));
     // read file to buffer
     std::vector<std::uint8_t> buffer;
     buffer.resize(GetFileSize(ifs));

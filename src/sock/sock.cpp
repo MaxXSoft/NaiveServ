@@ -21,7 +21,7 @@ Socket::Socket(const Socket &socket, SocketType accepted) {
     IncreaseCounter();
     // copy properties
     proto_ = socket.proto_;
-    status_ = socket.status_;
+    status_ = Status::Connected;
     local_ = socket.local_;
     remote_ = socket.remote_;
     accepted_ = accepted;

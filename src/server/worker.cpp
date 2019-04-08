@@ -26,10 +26,10 @@ std::string Worker::FetchData() {
     const int kDefaultBufferSize = config.sock_buffer_size();
     // initialize buffer
     std::string data;
-    auto buf = reinterpret_cast<uint8_t *>(data.data());
-    // receive data from client
     std::size_t len = kDefaultBufferSize, pos = 0;
     data.resize(len);
+    auto buf = reinterpret_cast<uint8_t *>(data.data());
+    // receive data from client
     do {
         socket_.Receive(buf + pos, len);
         assert(len <= kDefaultBufferSize);

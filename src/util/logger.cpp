@@ -18,7 +18,7 @@ std::ostream &utime(std::ostream &os) {
     auto now = std::time(nullptr);
     // print to stream
     if (std::strftime(buffer, 100, format, std::localtime(&now))) {
-        os << buffer << ' ';
+        os << buffer;
     }
     return os;
 }
