@@ -10,7 +10,7 @@
 // factory of responder (singleton)
 class Router : public Singleton<Router> {
 public:
-    const Responder &GetResponder(const std::string &url) const;
+    Responder GetResponder(const std::string &url) const;
 
     // getters
     const Responder &default_responder() const { return default_resp_; }

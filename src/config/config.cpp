@@ -55,7 +55,7 @@ ConfigReader::ConfigReader() {
     // initialize current path
     current_path_ = GetCurrentDir();
     // try to open configuration file
-    std::ifstream ifs(current_path_ + "/config.json");
+    std::ifstream ifs(current_path_ + "/" + kDefaultConfigFile);
     if (!ifs.is_open()) {
         LogError("invalid configuration file path");
         SetAsDefault();
@@ -168,7 +168,6 @@ bool ConfigReader::ReadConfig() {
         return LogError("invalid responder object");
     }
     // check default responder
-    const auto &def_resp = resp["default"];
     if (ReadRule(resp["default"], default_rule_.first,
             default_rule_.second)) return false;
     // check responder rules
@@ -177,7 +176,7 @@ bool ConfigReader::ReadConfig() {
     for (const auto &i : rules.GetArray()) {
         std::string url;
         ResponderRule rule;
-        if (!ReadRule(i, url, rule.first, rule.second));
+        if (!ReadRule(i, url, rule.first, rule.second)) return false;
         resp_rules_[url] = rule;
     }
     return true;

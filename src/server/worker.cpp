@@ -44,7 +44,7 @@ std::string Worker::FetchData() {
 }
 
 void Worker::HandleConnection() {
-    while (!done) {
+    while (!done_) {
         // fetch data from client
         auto request = FetchData();
         // parse request

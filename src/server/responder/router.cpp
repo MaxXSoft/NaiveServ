@@ -17,7 +17,7 @@ Router::Router() {
     }
 }
 
-const Responder &Router::GetResponder(const std::string &url) const {
+Responder Router::GetResponder(const std::string &url) const {
     int max_prefix_len = 0;
     Responder cur_resp = nullptr;
     // find in all of rules
