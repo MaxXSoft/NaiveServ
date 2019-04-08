@@ -4,7 +4,7 @@
 #include <string>
 
 #include <server/responder/responder.h>
-#include <server/responder/normal.h>
+#include <server/responder/impl/normal.h>
 
 #define RESPONDER_DECLARE(name_var, resp) \
     if (##name_var == #resp) { \
