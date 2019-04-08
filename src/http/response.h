@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <cstddef>
 
+#include <util/version.h>
+
 // wrap HTTP response into string
 class HTTPResponse {
 public:
@@ -32,7 +34,7 @@ public:
 private:
     // HTTP version in response message
     static constexpr int kMajorVersion = 1, kMinorVersion = 1;
-    static constexpr const char *kServerName = "NaiveServ";
+    static constexpr const char *kServerName = APP_NAME "/" APP_VERSION;
 
     // auto fill 'Date', 'Content-Length', 'Server' fields to 'field_info_'
     void AutoFill();
