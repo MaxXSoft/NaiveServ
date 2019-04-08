@@ -2,32 +2,17 @@
 #define NAIVESERV_SERVER_RESPONDER_RESPONDER_H_
 
 #include <memory>
-#include <string>
-#include <map>
 
+#include <http/parser.h>
+#include <http/response.h>
+
+// interface of all responders
 class ResponderInterface {
 public:
     virtual ~ResponderInterface() = default;
-    //
+    virtual HTTPResponse AcceptRequest(const HTTPParser &parser) const = 0;
 };
 
 using Responder = std::shared_ptr<ResponderInterface>;
-
-// factory of responder (singleton)
-class ResponderFactory {
-public:
-    static ResponderFactory &Instance();
-
-    const Responder &GetDefaultResponder() { return default_responder_; }
-    const Responder &GetResponder(const std::string &name);
-
-private:
-    ResponderFactory();
-
-    // singleton
-    static ResponderFactory *factory_instance_;
-    Responder default_responder_;
-    std::map<std::string, Responder> responders_;
-};
 
 #endif // NAIVESERV_SERVER_RESPONDER_RESPONDER_H_
