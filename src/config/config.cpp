@@ -2,8 +2,6 @@
 
 #include <fstream>
 #include <sstream>
-#include <algorithm>
-#include <cassert>
 
 #include <rapidjson/istreamwrapper.h>
 
@@ -66,15 +64,13 @@ ConfigReader::ConfigReader() {
     // parse JSON to DOM
     rapidjson::IStreamWrapper isw(ifs);
     document.ParseStream(isw);
-    if (document.HasParseError()) {
+    if (document.HasParseError() || !document.IsObject()) {
         LogError("invalid configuration file");
         SetAsDefault();
         return;
     }
-    // set all configurations to default
-    SetAsDefault();
     // check config file
-    ReadConfig();
+    if (!ReadConfig()) SetAsDefault();
 }
 
 bool ConfigReader::LogError(const char *message) {
@@ -87,7 +83,7 @@ void ConfigReader::SetAsDefault() {
     port_ = 80;
     www_root_ = current_path_ + "/www";
     sock_buf_size_ = 1024;
-    default_resp_ = "Normal";
+    default_rule_ = {"Normal", {}};
     resp_rules_.clear();
 }
 
@@ -97,6 +93,40 @@ bool ConfigReader::CheckHasMember(const char *name) {
         err_info = err_info + name + "'";
         return LogError(err_info.c_str());
     }
+    return true;
+}
+
+// TODO: rewrite this function
+bool ConfigReader::ReadRule(const rapidjson::Value &v,
+        std::string &name, ArgList &args) {
+    // existence check
+    if (!v.IsObject() || !v.HasMember("name") || !v.HasMember("args")) {
+        LogError("invalid responder rule");
+    }
+    // check if type is correct
+    const auto &n = v["name"], &a = v["args"];
+    if (!n.IsString() || !a.IsArray()) {
+        return LogError("invalid content of rule");
+    }
+    name = n.GetString();
+    // get argument array
+    for (const auto &arg : a.GetArray()) {
+        if (!arg.IsString()) return LogError("invalid argument list");
+        args.push_back(arg.GetString());
+    }
+    return true;
+}
+
+// TODO: rewrite this function
+bool ConfigReader::ReadRule(const rapidjson::Value &v,
+        std::string &url, std::string &name, ArgList &args) {
+    if (!ReadRule(v, name, args)) return false;
+    // existence check
+    if (!v.HasMember("url")) LogError("invalid responder rule");
+    // check if type is correct
+    const auto &u = v["url"];
+    if (!u.IsString()) return LogError("invalid content of rule");
+    url = u.GetString();
     return true;
 }
 
@@ -139,38 +169,16 @@ bool ConfigReader::ReadConfig() {
     }
     // check default responder
     const auto &def_resp = resp["default"];
-    if (!def_resp.IsString()) return LogError("invalid responder name");
-    default_resp_ = def_resp.GetString();
+    if (ReadRule(resp["default"], default_rule_.first,
+            default_rule_.second)) return false;
     // check responder rules
     const auto &rules = resp["rules"];
     if (!rules.IsArray()) return LogError("invalid rule array");
     for (const auto &i : rules.GetArray()) {
-        if (!i.IsObject() || !i.HasMember("url") || !i.HasMember("name")) {
-            LogError("invalid responder rule");
-        }
-        const auto &url = i["url"], &name = i["name"];
-        if (!url.IsString() || !name.IsString()) {
-            return LogError("'url' or 'name' must be string");
-        }
-        resp_rules_[url.GetString()] = name.GetString();
+        std::string url;
+        ResponderRule rule;
+        if (!ReadRule(i, url, rule.first, rule.second));
+        resp_rules_[url] = rule;
     }
-}
-
-const char *ConfigReader::GetRule(const std::string &url) const {
-    int max_prefix_len = 0;
-    const char *cur_resp = nullptr;
-    // find in all of rules
-    for (const auto &it : resp_rules_) {
-        // check if is prefix
-        const auto &cur = it.first;
-        auto pref = std::mismatch(cur.begin(), cur.end(), url.begin());
-        if (pref.first == cur.end()) {
-            // check if length is longest
-            if (cur.size() > max_prefix_len) {
-                max_prefix_len = cur.size();
-                cur_resp = it.second.c_str();
-            }
-        }
-    }
-    return cur_resp;
+    return true;
 }

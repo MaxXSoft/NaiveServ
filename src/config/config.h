@@ -2,24 +2,20 @@
 #define NAIVESERV_CONFIG_CONFIG_H_
 
 #include <string>
-#include <map>
 #include <cstdint>
 
 #include <rapidjson/document.h>
 
 #include <util/singleton.h>
+#include <server/responder/responder.h>
 
 class ConfigReader : public Singleton<ConfigReader> {
 public:
-    using ResponderRules = std::map<std::string, std::string>;
-
-    const char *GetRule(const std::string &url) const;
-
     // getters
     std::uint16_t port() const { return port_; }
     const std::string &www_root() const { return www_root_; }
     std::uint32_t sock_buffer_size() const { return sock_buf_size_; }
-    const std::string &default_responder() const { return default_resp_; }
+    const ResponderRule &default_rule() const { return default_rule_; }
     const ResponderRules &responder_rules() const { return resp_rules_; }
 
     bool is_error() const { return is_error_; }
@@ -32,6 +28,10 @@ private:
     bool LogError(const char *message);
     void SetAsDefault();
     bool CheckHasMember(const char *name);
+    bool ReadRule(const rapidjson::Value &v,
+            std::string &name, ArgList &args);
+    bool ReadRule(const rapidjson::Value &v,
+            std::string &url, std::string &name, ArgList &args);
     bool ReadConfig();
 
     std::string current_path_;
@@ -42,7 +42,7 @@ private:
     std::uint16_t port_;
     std::string www_root_;
     std::uint32_t sock_buf_size_;
-    std::string default_resp_;
+    ResponderRule default_rule_;
     ResponderRules resp_rules_;
 };
 
