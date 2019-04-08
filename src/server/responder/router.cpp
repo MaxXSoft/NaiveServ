@@ -1,21 +1,16 @@
-#include <server/responder/responder.h>
+#include <server/responder/router.h>
 
-#include <server/responder/normal.h>
+#include <server/responder/table.h>
 
-// initialize instance
-ResponderFactory *ResponderFactory::factory_instance_ =
-        new ResponderFactory();
-
-ResponderFactory::ResponderFactory() {
+Router::Router() {
     // initialize factory
     default_responder_ = std::make_shared<NormalResponder>();
     // TODO: read config
-    // TODO: add submodule of RapidJSON
     // TODO: implement NormalResponder
     // TODO: implement Worker
 }
 
-const Responder &ResponderFactory::GetResponder(const std::string &name) {
+const Responder &Router::GetResponder(const std::string &name) {
     auto it = responders_.find(name);
     if (it != responders_.end()) {
         return it->second;
@@ -23,4 +18,9 @@ const Responder &ResponderFactory::GetResponder(const std::string &name) {
     else {
         return default_responder_;
     }
+}
+
+const Responder &Router::GetResponderByURL(
+        const std::string &url) {
+    // TODO
 }
