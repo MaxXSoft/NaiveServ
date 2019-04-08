@@ -10,9 +10,10 @@
 // factory of responder (singleton)
 class Router : public Singleton<Router> {
 public:
-    const Responder &GetDefaultResponder() { return default_responder_; }
-    const Responder &GetResponder(const std::string &name);
-    const Responder &GetResponderByURL(const std::string &url);
+    const Responder &GetResponder(const std::string &url) const;
+
+    // getters
+    const Responder &default_responder() const { return default_resp_; }
 
 private:
     using ResponderTable = std::map<std::string, Responder>;
@@ -21,8 +22,8 @@ private:
 
     Router();
 
-    Responder default_responder_;
-    ResponderTable responders_;
+    Responder default_resp_;
+    ResponderTable table_;
 };
 
 #endif // NAIVESERV_SERVER_RESPONDER_ROUTER_H_
