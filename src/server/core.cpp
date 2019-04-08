@@ -2,16 +2,11 @@
 
 #include <utility>
 
+#include <config/config.h>
 #include <util/logger.h>
 
-namespace {
-
-static constexpr int kHTTPLocalPort = 80;
-
-} // namespace
-
 void Core::InitSocket() {
-    sock_.set_local_port(kHTTPLocalPort);
+    sock_.set_local_port(ConfigReader::Instance().port());
 }
 
 void Core::LogError(const char *message) {

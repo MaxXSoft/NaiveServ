@@ -4,15 +4,10 @@
 #include <string>
 #include <cassert>
 
+#include <config/config.h>
 #include <http/parser.h>
 #include <server/responder/responder.h>
 #include <util/logger.h>
-
-namespace {
-
-static constexpr std::size_t kDefaultBufferSize = 1024;
-
-} // namespace
 
 void Worker::LogError(const char *message) {
     ulog << "[Worker " << utime << "] ERROR (";
@@ -27,6 +22,8 @@ void Worker::StartWork() {
 }
 
 std::string Worker::FetchData() {
+    auto &config = ConfigReader::Instance();
+    const int kDefaultBufferSize = config.sock_buffer_size();
     // initialize buffer
     std::string data;
     auto buf = reinterpret_cast<uint8_t *>(data.data());
