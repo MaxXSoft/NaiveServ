@@ -6,21 +6,25 @@
 #include <server/responder/responder.h>
 #include <server/responder/impl/normal.h>
 
-#define RESPONDER_DECLARE(name_var, resp) \
-    if (##name_var == #resp) { \
-        return std::make_shared<resp##Responder>(); \
-    }
-
-#define RESPONDER_EXPAND(name_var, responders) \
-    responders(name_var, RESPONDER_DECLARE)
 
 // declare all responders here
-#define ALL_RESPONDERS(name_var, f) \
-    f(name_var, Normal)
+#define ALL_RESPONDERS(f) \
+    f(Normal)
 
-// get responders
-inline Responder NewResponderByName(const std::string &name) {
-    RESPONDER_EXPAND(name, ALL_RESPONDERS);
+
+// some other magic macros
+#define RESPONDER_DECLARE(resp) \
+    if (name == #resp) { \
+        return std::make_shared<resp##Responder>(args); \
+    }
+
+#define RESPONDER_EXPAND(responders) \
+    responders(RESPONDER_DECLARE)
+
+// get responder
+inline Responder NewResponder(const std::string &name,
+        const ArgList &args) {
+    RESPONDER_EXPAND(ALL_RESPONDERS);
     // default path
     return nullptr;
 }
