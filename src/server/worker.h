@@ -19,7 +19,9 @@ public:
     bool done() const { return done_; }
 
 private:
+    void LogError(const char *message);
     void StartWork();
+    std::string FetchData();
     void HandleConnection();
 
     Socket socket_;
