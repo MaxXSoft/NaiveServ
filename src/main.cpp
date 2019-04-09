@@ -1,4 +1,4 @@
-// TODO
+#include <server/core.h>
 
 namespace {
 
@@ -7,6 +7,7 @@ namespace {
 } // namespace
 
 int main(int argc, const char *argv[]) {
-    // TODO
+    auto &core = Core::Instance();
+    core.StartListen();
     return 0;
 }
