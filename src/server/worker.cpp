@@ -1,6 +1,5 @@
 #include <server/worker.h>
 
-#include <thread>
 #include <string>
 #include <cassert>
 
@@ -17,8 +16,7 @@ void Worker::LogError(const char *message) {
 }
 
 void Worker::StartWork() {
-    std::thread work(&Worker::HandleConnection, this);
-    work.detach();
+    work_.detach();
 }
 
 std::string Worker::FetchData() {

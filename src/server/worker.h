@@ -2,12 +2,14 @@
 #define NAIVESERV_SERVER_WORKER_H_
 
 #include <utility>
+#include <thread>
 
 #include <sock/sock.h>
 
 class Worker {
 public:
-    Worker(Socket socket) : socket_(std::move(socket)), done_(false) {
+    Worker(Socket socket) : socket_(std::move(socket)),
+            work_(&Worker::HandleConnection, this), done_(false) {
         StartWork();
     }
     Worker(const Worker &) = delete;
@@ -25,6 +27,7 @@ private:
     void HandleConnection();
 
     Socket socket_;
+    std::thread work_;
     // indicate if work is done
     bool done_;
 };

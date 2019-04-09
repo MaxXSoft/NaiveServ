@@ -1,6 +1,5 @@
 #include <sock/sock.h>
 
-#include <iostream>
 #include <cassert>
 #include <cstring>
 
