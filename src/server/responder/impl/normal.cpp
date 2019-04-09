@@ -15,6 +15,8 @@ namespace {
 static const std::map<std::string, std::string> kTypeMap = {
     {"html", "text/html"},
     {"htm", "text/html"},
+    {"css", "text/css"},
+    {"js", "application/x-javascript"},
     {"ico", "image/x-icon"},
     {"jpeg", "image/jpeg"},
     {"jpg", "image/jpeg"},
@@ -42,6 +44,21 @@ inline std::size_t GetFileSize(std::ifstream &ifs) {
 
 } // namespace
 
+NormalResponder::NormalResponder(const ArgList &args)  {
+    // read url prefix
+    if (args.size() >= 1) url_prefix_ = args[0];
+    // read index page
+    if (args.size() >= 2) {
+        index_page_ = args[1];
+    }
+    else {
+        index_page_ = "index.html";
+    }
+    // read root path
+    www_root_ = ConfigReader::Instance().www_root();
+    if (args.size() >= 3) www_root_ += args[2];
+}
+
 HTTPResponse NormalResponder::AcceptRequest(
         const HTTPParser &parser) const {
     // check method
@@ -53,7 +70,7 @@ HTTPResponse NormalResponder::AcceptRequest(
     assert(parser.url().find(url_prefix_) != std::string::npos);
     auto url = parser.url().substr(url_prefix_.size());
     // get file path
-    auto path = ConfigReader::Instance().www_root();
+    auto path = www_root_;
     path += NormalizeURL(url);
     if (path.back() == '/') path += index_page_;
     // open file
