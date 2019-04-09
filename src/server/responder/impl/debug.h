@@ -12,6 +12,8 @@ public:
     HTTPResponse AcceptRequest(const HTTPParser &parser) const override;
 
 private:
+    std::string GenerateHTML(const HTTPParser &parser) const;
+
     std::string debug_info_;
 };
 
