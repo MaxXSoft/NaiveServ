@@ -15,7 +15,7 @@ class HTTPResponse {
 public:
     using DataArray = std::vector<std::uint8_t>;
 
-    HTTPResponse() {}
+    HTTPResponse() : status_code_(200) {}
     HTTPResponse(int status_code) : status_code_(status_code) {}
 
     std::string ToString();
