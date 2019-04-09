@@ -25,7 +25,7 @@ public:
     // if field name not found, returns empty string
     const std::string &GetFieldValue(const std::string &field_name) const {
         auto it = field_info_.find(field_name);
-        return it != field_info_.end() ? it->second : "";
+        return it != field_info_.end() ? it->second : kEmptyString;
     }
 
     // getters
@@ -49,6 +49,8 @@ private:
     // requested data.
     // this field is valid when client transfer data using POST method
     DataArray data_;
+    // just empty string
+    static const std::string kEmptyString;
 };
 
 #endif // NAIVESERV_HTTP_PARSER_H_

@@ -2,6 +2,9 @@
 
 #include <cstring>
 
+// definition of empty string
+const std::string HTTPParser::kEmptyString = "";
+
 void HTTPParser::Parse(const std::string &request) {
     int now_pos = 0;
     // fetch method information
