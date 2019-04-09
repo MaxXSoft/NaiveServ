@@ -21,6 +21,7 @@ private:
     friend class Singleton<Router>;
 
     Router();
+    void LogError(const char *message);
 
     Responder default_resp_;
     ResponderTable table_;

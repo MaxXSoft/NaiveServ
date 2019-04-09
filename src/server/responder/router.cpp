@@ -1,20 +1,40 @@
 #include <server/responder/router.h>
 
+#include <utility>
 #include <algorithm>
 
 #include <server/responder/table.h>
+#include <server/responder/impl/normal.h>
 #include <config/config.h>
+#include <util/logger.h>
 
 Router::Router() {
     auto &config = ConfigReader::Instance();
     // read default rule
     const auto &def_rule = config.default_rule();
     default_resp_ = NewResponder(def_rule.first, def_rule.second);
+    if (!default_resp_) {
+        LogError("invalid name of default responder, use 'Normal'");
+        default_resp_ = std::make_shared<NormalResponder>(ArgList());
+    }
     // initialize router table
     for (const auto &it : config.responder_rules()) {
         const auto &rule = it.second;
-        table_[it.first] = NewResponder(rule.first, rule.second);
+        auto resp = NewResponder(rule.first, rule.second);
+        if (!resp) {
+            using namespace std::string_literals;
+            LogError(("invalid responder name '"s
+                    + rule.first + "'").c_str());
+        }
+        else {
+            table_[it.first] = std::move(resp);
+        }
     }
+}
+
+void Router::LogError(const char *message) {
+    ulog << "[Router " << utime << "] ERROR: ";
+    ulog << message << std::endl;
 }
 
 Responder Router::GetResponder(const std::string &url) const {

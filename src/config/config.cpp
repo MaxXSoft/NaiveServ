@@ -89,9 +89,8 @@ void ConfigReader::SetAsDefault() {
 
 bool ConfigReader::CheckHasMember(const char *name) {
     if (!document.HasMember(name)) {
-        std::string err_info = "missing '";
-        err_info = err_info + name + "'";
-        return LogError(err_info.c_str());
+        using namespace std::string_literals;
+        return LogError(("missing '"s + name + "'").c_str());
     }
     return true;
 }
