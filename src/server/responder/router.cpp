@@ -8,6 +8,14 @@
 #include <config/config.h>
 #include <util/logger.h>
 
+namespace {
+
+static constexpr const char *kAllResponders[] = {
+    RESPONDER_EXPAND(RESPONDER_NAME_ARRAY, ALL_RESPONDERS)
+};
+
+} // namespace
+
 Router::Router() {
     auto &config = ConfigReader::Instance();
     // read default rule
@@ -37,6 +45,16 @@ void Router::LogError(const char *message) {
     ulog << message << std::endl;
 }
 
+void Router::PrintRule(std::ostream &os, const ResponderRule &rule) const {
+    os << "{name: " << rule.first << ", args: [";
+    int count = 0;
+    for (const auto &i : rule.second) {
+        if (count++) os << ", ";
+        os << "(" << i << ")";
+    }
+    os << "]}";
+}
+
 Responder Router::GetResponder(const std::string &url) const {
     int max_prefix_len = 0;
     Responder cur_resp = nullptr;
@@ -54,4 +72,36 @@ Responder Router::GetResponder(const std::string &url) const {
         }
     }
     return cur_resp ? cur_resp : default_resp_;
+}
+
+void Router::PrintAllResponders(std::ostream &os,
+        const char *delimiter) const {
+    int count = 0;
+    for (const auto &i : kAllResponders) {
+        if (count++) os << delimiter;
+        os << i;
+    }
+}
+
+void Router::PrintRouterRules(std::ostream &os,
+        const char *delimiter) const {
+    auto &config = ConfigReader::Instance();
+    // print default responder
+    const auto &def_rule = config.default_rule();
+    os << "default: ";
+    if (IsResponderValid(def_rule.first)) {
+        PrintRule(os, def_rule);
+    }
+    else {
+        os << "{name: Normal, args: []}";
+    }
+    // print rest of rules
+    for (const auto &it : config.responder_rules()) {
+        const auto &url = it.first;
+        const auto &rule = it.second;
+        if (IsResponderValid(rule.first)) {
+            os << delimiter << url << ": ";
+            PrintRule(os, rule);
+        }
+    }
 }
