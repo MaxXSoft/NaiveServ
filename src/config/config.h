@@ -11,6 +11,8 @@
 
 class ConfigReader : public Singleton<ConfigReader> {
 public:
+    bool ReloadConfig(const std::string &file);
+
     // getters
     std::uint16_t port() const { return port_; }
     const std::string &www_root() const { return www_root_; }

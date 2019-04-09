@@ -55,23 +55,8 @@ bool IsValidVersion(const char *version) {
 ConfigReader::ConfigReader() {
     // initialize current path
     current_path_ = GetCurrentDir();
-    // try to open configuration file
-    std::ifstream ifs(current_path_ + "/" + kDefaultConfigFile);
-    if (!ifs.is_open()) {
-        LogError("invalid configuration file path");
-        SetAsDefault();
-        return;
-    }
-    // parse JSON to DOM
-    rapidjson::IStreamWrapper isw(ifs);
-    document.ParseStream(isw);
-    if (document.HasParseError() || !document.IsObject()) {
-        LogError("invalid configuration file");
-        SetAsDefault();
-        return;
-    }
-    // check config file
-    if (!ReadConfig()) SetAsDefault();
+    // try to read configuration
+    ReloadConfig(current_path_ + "/" + kDefaultConfigFile);
 }
 
 bool ConfigReader::LogError(const char *message) {
@@ -180,4 +165,24 @@ bool ConfigReader::ReadConfig() {
         resp_rules_[url] = rule;
     }
     return true;
+}
+
+bool ConfigReader::ReloadConfig(const std::string &file) {
+    // try to open configuration file
+    std::ifstream ifs(file);
+    if (!ifs.is_open()) {
+        SetAsDefault();
+        return LogError("invalid configuration file path");
+    }
+    // parse JSON to DOM
+    rapidjson::IStreamWrapper isw(ifs);
+    document.ParseStream(isw);
+    if (document.HasParseError() || !document.IsObject()) {
+        SetAsDefault();
+        return LogError("invalid configuration file");
+    }
+    // check config file
+    auto ret = ReadConfig();
+    if (!ret) SetAsDefault();
+    return ret;
 }
