@@ -59,6 +59,7 @@ public:
 
     void Reset() {
         QuitSocket();
+        status_ = Status::Closed;
         InitSocket();
     }
 
