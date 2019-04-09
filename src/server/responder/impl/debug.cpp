@@ -19,17 +19,11 @@ DebugResponder::DebugResponder(const ArgList &args) {
     oss << "<h2>Debug Info</h2>" << std::endl;
     oss << "first argument: ";
     oss << (args.size() >= 1 ? args[0] : "<i>NULL</i>") << std::endl;
+    oss << "<br>";
     // display server info
     oss << "<h2>Server Info</h2>" << std::endl;
-    oss << "server name: " << APP_NAME << std::endl;
-    oss << "server version: " << APP_VERSION << std::endl;
-    // display responder info
-    const auto &router = Router::Instance();
-    oss << "<h2>Responder Info</h2>" << std::endl;
-    router.PrintAllResponders(oss);
-    // display router info
-    oss << "<h2>Router Info</h2>" << std::endl;
-    router.PrintRouterRules(oss, "<br>");
+    oss << "server name: " << APP_NAME << "<br>" << std::endl;
+    oss << "server version: " << APP_VERSION << "<br>" << std::endl;
     // store all info
     debug_info_ = oss.str();
 }
@@ -46,11 +40,25 @@ HTTPResponse DebugResponder::AcceptRequest(
     oss << "<h2>HTTP Info</h2>" << std::endl;
     oss << "HTTP method: ";
     oss << kMethodString[static_cast<int>(parser.method())] << std::endl;
+    oss << "<br>";
     oss << "current URL: " << url << std::endl;
+    oss << "<br>";
     oss << "UA: " << parser.GetFieldValue("User-Agent") << std::endl;
+    oss << "<br>";
+    // display debug info
+    oss << debug_info_;
+    // display responder info
+    const auto &router = Router::Instance();
+    oss << "<h2>Responder Info</h2>" << std::endl;
+    router.PrintAllResponders(oss);
+    oss << "<br>";
+    // display router info
+    oss << "<h2>Router Info</h2>" << std::endl;
+    router.PrintRouterRules(oss, "<br>");
+    oss << "<br>";
     // send response
     HTTPResponse response;
-    auto data = oss.str() + debug_info_;
+    auto data = oss.str();
     auto ptr = reinterpret_cast<std::uint8_t *>(data.data());
     response.set_data(ptr, data.size());
     return response;

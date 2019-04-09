@@ -55,7 +55,7 @@ void Socket::DecreaseCounter() {
 
 void Socket::InitSocket() {
     InvalidateSocket(accepted_);
-    // initialize socket
+     // initialize socket
     if (!OpenSocket()) return;
     // initialize local address
     InitAddress(local_);
@@ -82,6 +82,11 @@ bool Socket::OpenSocket() {
     socket_ = socket(PF_INET, SOCK_STREAM, proto);
     // check is valid
     if (!IsValidSocket(socket_)) return SetError();
+    // set socket option
+    int on = 1;
+    if (setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) {
+        return SetError();
+    }
     status_ = Status::Open;
     return true;
 }

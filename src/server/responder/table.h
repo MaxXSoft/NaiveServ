@@ -5,11 +5,12 @@
 
 #include <server/responder/responder.h>
 #include <server/responder/impl/normal.h>
+#include <server/responder/impl/debug.h>
 
 
 // declare all responders here
 #define ALL_RESPONDERS(f) \
-    f(Normal)
+    f(Normal) f(Debug)
 
 
 // some other magic macros
