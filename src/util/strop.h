@@ -24,6 +24,7 @@ inline void StrSplit(const std::string &s, const std::string &delim,
         start = end + delim.length();
         end = s.find(delim, start);
     }
+    callback(s.substr(start));
 }
 
 inline std::string NormalizeURL(const std::string &url) {
