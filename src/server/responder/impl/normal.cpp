@@ -8,6 +8,7 @@
 #include <cstdint>
 
 #include <config/config.h>
+#include <util/strop.h>
 
 namespace {
 
@@ -29,12 +30,6 @@ inline const char *GetTypeByExt(const std::string &ext) {
     else {
         return "application/octet-stream";
     }
-}
-
-inline std::string GetFileExtension(const std::string &file) {
-    auto dot_pos = file.rfind('.');
-    if (dot_pos == std::string::npos) return "";
-    return file.substr(dot_pos + 1);
 }
 
 inline std::size_t GetFileSize(std::ifstream &ifs) {
@@ -59,7 +54,7 @@ HTTPResponse NormalResponder::AcceptRequest(
     auto url = parser.url().substr(url_prefix_.size());
     // get file path
     auto path = ConfigReader::Instance().www_root();
-    path += url;
+    path += NormalizeURL(url);
     if (path.back() == '/') path += index_page_;
     // open file
     std::ifstream ifs(path, std::ios::binary);
@@ -68,13 +63,13 @@ HTTPResponse NormalResponder::AcceptRequest(
         return HTTPResponse(404);
     }
     // get content type
-    auto type = GetTypeByExt(GetFileExtension(path));
+    auto type = GetTypeByExt(GetStrSuffix(path));
     // read file to buffer
     std::vector<std::uint8_t> buffer;
     buffer.resize(GetFileSize(ifs));
     ifs.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
     // initialize response
-    HTTPResponse response(200);
+    HTTPResponse response;
     response.set_data(buffer);
     response.set_field("Content-Type", type);
     return response;
