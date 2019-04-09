@@ -20,6 +20,7 @@ namespace {
 
 static constexpr const char *kDefaultConfigFile = "config.json";
 static constexpr const char *kCurrentPathPlaceholder = "${currentPath}";
+static constexpr int kPlaceHolderLen = 14;
 
 // TODO: this function returns current working directory,
 // but not the program directory. consider rewrite
@@ -132,30 +133,30 @@ bool ConfigReader::ReadRule(const rapidjson::Value &v,
 // TODO: rewrite this function
 bool ConfigReader::ReadConfig() {
     // check version
-    if (CheckHasMember("version")) return false;
+    if (!CheckHasMember("version")) return false;
     const auto &ver = document["version"];
     if (!ver.IsString() || !IsValidVersion(ver.GetString())) {
         return LogError("configuration file version is too high");
     }
     // check port
-    if (CheckHasMember("port")) return false;
+    if (!CheckHasMember("port")) return false;
     const auto &port = document["port"];
     if (!port.IsUint() || port.GetUint() > 65535) {
         return LogError("invalid port");
     }
     port_ = port.GetUint();
     // check root directory
-    if (CheckHasMember("rootDirectory")) return false;
+    if (!CheckHasMember("rootDirectory")) return false;
     const auto &root_dir = document["rootDirectory"];
     if (!root_dir.IsString()) return LogError("invalid root directory");
     www_root_ = root_dir.GetString();
     // replace placeholder of current path
     auto pos = www_root_.find(kCurrentPathPlaceholder);
     if (pos != std::string::npos) {
-        www_root_.replace(pos, current_path_.size(), current_path_);
+        www_root_.replace(pos, kPlaceHolderLen, current_path_);
     }
     // check socket buffer size
-    if (CheckHasMember("sockBufferSize")) return false;
+    if (!CheckHasMember("sockBufferSize")) return false;
     const auto &buf_size = document["sockBufferSize"];
     if (!buf_size.IsUint()) return LogError("invalid buffer size");
     sock_buf_size_ = buf_size.GetUint();
@@ -167,7 +168,7 @@ bool ConfigReader::ReadConfig() {
         return LogError("invalid responder object");
     }
     // check default responder
-    if (ReadRule(resp["default"], default_rule_.first,
+    if (!ReadRule(resp["default"], default_rule_.first,
             default_rule_.second)) return false;
     // check responder rules
     const auto &rules = resp["rules"];

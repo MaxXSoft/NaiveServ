@@ -37,7 +37,7 @@ inline std::string NormalizeURL(const std::string &url) {
     });
     // add slash in end of result
     auto ext = GetStrSuffix(ans);
-    if (ext.find('/') != std::string::npos) ans += '/';
+    if (ext.empty() || ext.find('/') != std::string::npos) ans += '/';
     return ans;
 }
 
