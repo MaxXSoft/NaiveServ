@@ -23,8 +23,9 @@ public:
 
     // get the value of specific field name in current HTTP request.
     // if field name not found, returns empty string
-    const std::string &GetFieldValue(const std::string &field_name) {
-        return field_info_[field_name];
+    const std::string &GetFieldValue(const std::string &field_name) const {
+        auto it = field_info_.find(field_name);
+        return it != field_info_.end() ? it->second : "";
     }
 
     // getters
