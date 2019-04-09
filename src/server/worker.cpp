@@ -57,17 +57,22 @@ void Worker::HandleConnection() {
         auto data = reinterpret_cast<std::uint8_t *>(response.data());
         auto len = response.size();
         socket_.Send(data, len);
-        // check error
-        if (socket_.status() == Socket::Status::Error) {
-            // log error
-            LogError("socket error, connection closed");
-        }
-        // check if connection is closed
+        // check if need to close current connection
         if (parser.GetFieldValue("Connection") == "closed") {
-            // close current socket
             socket_.Close();
-            // set 'done' flag
-            done_ = true;
+        }
+        // check socket status
+        switch (socket_.status()) {
+            case Socket::Status::Error: {
+                // log error
+                LogError("socket error, connection closed");
+                // fallthrough
+            }
+            case Socket::Status::Closed: {
+                done_ = true;
+                break;
+            }
+            default:;
         }
     }
 }
