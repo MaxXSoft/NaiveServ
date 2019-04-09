@@ -49,11 +49,18 @@ void Worker::HandleConnection() {
         auto request = FetchData();
         // parse request
         HTTPParser parser(request);
-        // get responder via router
-        auto &router = Router::Instance();
-        auto responder = router.GetResponder(parser.url());
-        // send response
-        auto response = responder->AcceptRequest(parser).ToString();
+        std::string response;
+        if (!parser.is_error()) {
+            // get responder via router
+            auto &router = Router::Instance();
+            auto responder = router.GetResponder(parser.url());
+            // get response
+            response = responder->AcceptRequest(parser).ToString();
+        }
+        else {
+            // parser error
+            response = HTTPResponse(500).ToString();
+        }
         auto data = reinterpret_cast<std::uint8_t *>(response.data());
         auto len = response.size();
         socket_.Send(data, len);

@@ -15,8 +15,10 @@ public:
         Get, Post, Other
     };
 
-    HTTPParser() {}
-    HTTPParser(const std::string &request) { Parse(request); }
+    HTTPParser() : is_error_(false) {}
+    HTTPParser(const std::string &request) : is_error_(false) {
+        Parse(request);
+    }
 
     // parse specific request
     void Parse(const std::string &request);
@@ -29,6 +31,7 @@ public:
     }
 
     // getters
+    bool is_error() const { return is_error_; }
     Method method() const { return method_; }
     const std::string &url() const { return url_; }
     int major_version() const { return major_version_; }
@@ -36,6 +39,7 @@ public:
     const DataArray &data() const { return data_; }
 
 private:
+    bool is_error_;
     // HTTP request method.
     // GET, POST... and so on
     Method method_;

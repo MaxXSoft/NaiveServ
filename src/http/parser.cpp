@@ -6,6 +6,11 @@
 const std::string HTTPParser::kEmptyString = "";
 
 void HTTPParser::Parse(const std::string &request) {
+    // TODO: fix this code block
+    if (request.empty()) {
+        is_error_ = true;
+        return;
+    }
     int now_pos = 0;
     // fetch method information
     switch (request[0]) {
