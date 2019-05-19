@@ -1,6 +1,7 @@
 # NaiveServ
 
-A naive web server using socket.
+A naive web server based on socket.
+This repository is a computer network course assignment.
 
 ## Details
 
